@@ -33,3 +33,20 @@ public class Answers {
         return answers[index];
     }
 }
+
+
+// private static ArrayList<String> examples = new ArrayList<String>();
+
+//     public static String random() {
+//         examples.add("new message 1");
+//         examples.add("hello world");
+//         examples.add("bye world");
+//         examples.add("yes");
+//         examples.add("no");
+//         examples.add("ExampleYes");
+
+//         Random randomResponse = new Random();
+//         int arraySize = examples.size();
+
+//         return examples.get(randomResponse.nextInt(arraySize));
+//     }
