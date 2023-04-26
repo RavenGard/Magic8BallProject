@@ -1,5 +1,6 @@
 package com.example.magic8ball;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.GestureDetectorCompat;
@@ -8,7 +9,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.media.MediaPlayer;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -51,6 +55,8 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+
+
     }
 
     @Override
@@ -88,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
         return super.onTouchEvent(event);
     }
 
-    private class MyGestureListener implements GestureDetector.OnGestureListener {
+    private class MyGestureListener implements GestureDetector.OnGestureListener, GestureDetector.OnDoubleTapListener {
 
         @Override
         public boolean onDown(MotionEvent e) {
@@ -119,6 +125,41 @@ public class MainActivity extends AppCompatActivity {
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
             responses.setText("");
             return true;
+        }
+
+        @Override
+        public boolean onSingleTapConfirmed(@NonNull MotionEvent e) {
+            return false;
+        }
+
+        // this is just to test if the vibration and sound works before I get alans code
+        @Override
+        public boolean onDoubleTap(MotionEvent event) {
+            final Vibrator vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+            final VibrationEffect vibrationEffect4;
+
+            // this type of vibration requires API 29
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+
+                // create vibrator effect with the constant EFFECT_TICK
+                vibrationEffect4 = VibrationEffect.createPredefined(VibrationEffect.EFFECT_TICK);
+
+                // it is safe to cancel other vibrations currently taking place
+                vibrator.cancel();
+
+                vibrator.vibrate(vibrationEffect4);
+
+                Log.v("Magic8Ball", "vibration feature is working");
+            }
+
+            MediaPlayer mediaPlayerBoom = MediaPlayer.create(MainActivity.this, R.raw.boom);
+            mediaPlayerBoom.start();
+            return false;
+        }
+
+        @Override
+        public boolean onDoubleTapEvent(@NonNull MotionEvent e) {
+            return false;
         }
     }
 }
