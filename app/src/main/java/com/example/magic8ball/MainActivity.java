@@ -40,7 +40,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private boolean flag;
     private MediaPlayer mMediaPlayer;
     private GestureDetectorCompat mDetector;
-//    private TextView responses;
+
+    private boolean flippedDown = false;
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
@@ -49,8 +50,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         setContentView(R.layout.activity_main);
 
         mDetector = new GestureDetectorCompat(this, new MyGestureListener());
-
-//        responses = findViewById(R.id.gravity);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.volumeControl);
         flag = true;
@@ -69,8 +68,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 }
             }
         });
-
-
 
         manager = (SensorManager) getSystemService(SENSOR_SERVICE);
         tvGravity = findViewById(R.id.gravity);
@@ -136,7 +133,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         @Override
         public boolean onSingleTapUp(MotionEvent e) {
-            tvGravity.setText(Answers.random());
+            tvGravity.setText(Answers.getRandomAnswer());
             return false;
         }
 
@@ -162,10 +159,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         float g = event.values[2];
 
         if (inRange(g, 9.81f, 0.01f)) { // up!
-            tvGravity.setText("Up");
+            if (flippedDown) {
+                tvGravity.setText(Answers.getRandomAnswer());
+                flippedDown = false;
+            }
             stopAlerts();
         } else if (inRange(g, -9.81f, 0.01f)) {
             tvGravity.setText("Down");
+            flippedDown = true;
             startAlerts();
         } else {
             tvGravity.setText(" ");
@@ -222,3 +223,4 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     }
 }
+
