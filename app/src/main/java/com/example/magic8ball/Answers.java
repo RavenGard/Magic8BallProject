@@ -1,5 +1,6 @@
 package com.example.magic8ball;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
@@ -34,21 +35,20 @@ public class Answers {
         int index = random.nextInt(responses.size());
         return responses.get(index);
     }
+
+     private static ArrayList<String> examples = new ArrayList<String>();
+
+     public static String random() {
+         examples.add("new message 1");
+         examples.add("hello world");
+         examples.add("bye world");
+         examples.add("yes");
+         examples.add("no");
+         examples.add("ExampleYes");
+
+         Random randomResponse = new Random();
+         int arraySize = examples.size();
+
+         return examples.get(randomResponse.nextInt(arraySize));
+     }
 }
-
-
-// private static ArrayList<String> examples = new ArrayList<String>();
-
-//     public static String random() {
-//         examples.add("new message 1");
-//         examples.add("hello world");
-//         examples.add("bye world");
-//         examples.add("yes");
-//         examples.add("no");
-//         examples.add("ExampleYes");
-
-//         Random randomResponse = new Random();
-//         int arraySize = examples.size();
-
-//         return examples.get(randomResponse.nextInt(arraySize));
-//     }
