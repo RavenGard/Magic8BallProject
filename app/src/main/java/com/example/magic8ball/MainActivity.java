@@ -4,7 +4,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.GestureDetectorCompat;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.util.Log;
@@ -20,6 +22,7 @@ public class MainActivity extends AppCompatActivity {
     private MediaPlayer mMediaPlayer;
     private GestureDetectorCompat mDetector;
     private TextView responses;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +50,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+
     }
 
     @Override
@@ -55,6 +59,11 @@ public class MainActivity extends AppCompatActivity {
         mMediaPlayer = MediaPlayer.create(this, R.raw.dreamy);
         mMediaPlayer.start();
         mMediaPlayer.setLooping(true);
+
+        SharedPreferences mPrefs = getSharedPreferences("MySharedPref", MODE_PRIVATE);
+        String s1 = mPrefs.getString("response", "");
+
+        responses.setText(s1);
     }
 
     @Override
@@ -64,6 +73,12 @@ public class MainActivity extends AppCompatActivity {
         mMediaPlayer.stop();
         mMediaPlayer.release();
         mMediaPlayer = null;
+
+        SharedPreferences sharedPreferences =getSharedPreferences("MySharedPref", MODE_PRIVATE);
+        SharedPreferences.Editor myEdit = sharedPreferences.edit();
+
+        myEdit.putString("response", responses.getText().toString());
+        myEdit.apply();
 
     }
 
