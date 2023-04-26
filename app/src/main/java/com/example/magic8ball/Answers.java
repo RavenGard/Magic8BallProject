@@ -1,11 +1,10 @@
 package com.example.magic8ball;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Random;
 
 public class Answers {
-    private static final List<String> responses = Arrays.asList(
+
+    private static final String[] answers = {
             "It is certain.",
             "It is decidedly so.",
             "Without a doubt.",
@@ -26,12 +25,11 @@ public class Answers {
             "My sources say no.",
             "Outlook not so good.",
             "Very doubtful."
-    );
-
-    private static final Random random = new Random();
+    };
 
     public static String getRandomAnswer() {
-        int index = random.nextInt(responses.size());
-        return responses.get(index);
+        Random random = new Random();
+        int index = random.nextInt(answers.length);
+        return answers[index];
     }
 }
