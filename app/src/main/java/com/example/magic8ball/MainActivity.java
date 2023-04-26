@@ -1,6 +1,21 @@
 package com.example.magic8ball;
 
 import androidx.annotation.NonNull;
+import android.content.Context;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
+import android.hardware.camera2.CameraAccessException;
+import android.hardware.camera2.CameraManager;
+import android.media.MediaPlayer;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
+import android.widget.TextView;
+
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.GestureDetectorCompat;
@@ -21,13 +36,20 @@ import android.widget.TextView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements SensorEventListener {
+
+    SensorManager manager;
+    TextView tvGravity;
+    Vibrator vibrator;
+    MediaPlayer mediaPlayer;
+    CameraManager cameraManager;
+    String cameraId;
     private boolean flag;
     private MediaPlayer mMediaPlayer;
     private GestureDetectorCompat mDetector;
     private TextView responses;
 
-
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -57,6 +79,17 @@ public class MainActivity extends AppCompatActivity {
 
 
 
+        manager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        tvGravity = findViewById(R.id.gravity);
+        vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+        mediaPlayer = MediaPlayer.create(this, R.raw.spongebobsquarepants);
+        cameraManager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
+
+        try {
+            cameraId = cameraManager.getCameraIdList()[0];
+        } catch (CameraAccessException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -70,6 +103,8 @@ public class MainActivity extends AppCompatActivity {
         String s1 = mPrefs.getString("response", "");
 
         responses.setText(s1);
+        manager.registerListener(this, manager.getDefaultSensor(Sensor.TYPE_GRAVITY),
+                SensorManager.SENSOR_DELAY_UI);
     }
 
     @Override
@@ -161,5 +196,72 @@ public class MainActivity extends AppCompatActivity {
         public boolean onDoubleTapEvent(@NonNull MotionEvent e) {
             return false;
         }
+        manager.unregisterListener(this);
+        mediaPlayer.release();
+    }
+
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        float g = event.values[2];
+
+        if (inRange(g, 9.81f, 0.01f)) { // up!
+            tvGravity.setText("Up");
+            stopAlerts();
+        } else if (inRange(g, -9.81f, 0.01f)) {
+            tvGravity.setText("Down");
+            startAlerts();
+        } else {
+            tvGravity.setText(" ");
+            stopAlerts();
+        }
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    private void startAlerts() {
+        // Vibration
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            vibrator.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
+        } else {
+            vibrator.vibrate(500);
+        }
+
+        // Sound
+        mediaPlayer.start();
+
+        // Camera flash
+        try {
+            cameraManager.setTorchMode(cameraId, true);
+        } catch (CameraAccessException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    private void stopAlerts() {
+        // Stop vibration
+        vibrator.cancel();
+
+        // Stop sound
+        if (mediaPlayer.isPlaying()) {
+            mediaPlayer.pause();
+            mediaPlayer.seekTo(0);
+        }
+
+        // Turn off camera flash
+        try {
+            cameraManager.setTorchMode(cameraId, false);
+        } catch (CameraAccessException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int i) {
+        // do nothing
+    }
+
+    private boolean inRange(float value, float target, float tol) {
+        return value >= target - tol && value <= target + tol;
+
     }
 }
