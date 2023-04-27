@@ -175,10 +175,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         public void onShowPress(MotionEvent e) {
         }
 
+        // Handle single tap gesture
         @Override
         public boolean onSingleTapUp(MotionEvent e) {
+            // Get a random answer and update the TextView
             String answer = Answers.getRandomAnswer();
             tvGravity.setText(answer);
+
+            // Speak the answer using TTS
             speak(answer);
             return false;
         }
@@ -188,18 +192,23 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             return false;
         }
 
+        // Handle long press gesture
         @Override
         public void onLongPress(MotionEvent e) {
+            // Start the About activity
             startActivity(new Intent(MainActivity.this, About.class));
         }
 
+        // Handle fling gesture
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+            // Clear the TextView
             tvGravity.setText("");
             return true;
         }
     }
 
+    // Speak the provided text using Text-to-Speech
     private void speak(String text) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, null);
@@ -208,20 +217,24 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
     }
 
+    // Handle sensor changes - starting code from Dr. Lutz
     @Override
     public void onSensorChanged(SensorEvent event) {
         float x = event.values[0];
         float y = event.values[1];
         float z = event.values[2];
 
-        if (inRange(z, 9.81f, 0.01f)) { // facing up
+        // Check if the device is facing up
+        if (inRange(z, 9.81f, 0.01f)) {
             if (flippedDown) {
+                // Get a random answer, update the TextView, and speak the answer
                 tvGravity.setText(Answers.getRandomAnswer());
                 flippedDown = false;
                 speakAnswer(); // Add this line to activate Text-to-Speech
             }
             stopAlerts();
-        } else if (inRange(x, -9.81f, 0.01f) || inRange(y, -9.81f, 0.01f) || inRange(z, -9.81f, 0.01f)) { // facing down
+            // Check if the device is facing down
+        } else if (inRange(x, -9.81f, 0.01f) || inRange(y, -9.81f, 0.01f) || inRange(z, -9.81f, 0.01f)) {
             tvGravity.setText("Down");
             flippedDown = true;
             startAlerts();
@@ -233,12 +246,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
 
 
+
     @RequiresApi(api = Build.VERSION_CODES.M)
     private void startAlerts() {
         // Vibration
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            // Create a one-shot vibration for devices with API level 26 or higher
             vibrator.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
         } else {
+            // Create a one-shot vibration for devices with API level below 26
             vibrator.vibrate(500);
         }
 
@@ -247,6 +263,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         // Camera flash
         try {
+            // Turn on the camera flashlight
             cameraManager.setTorchMode(cameraId, true);
         } catch (CameraAccessException e) {
             e.printStackTrace();
@@ -266,6 +283,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         // Turn off camera flash
         try {
+            // Turn off the camera flashlight
             cameraManager.setTorchMode(cameraId, false);
         } catch (CameraAccessException e) {
             e.printStackTrace();
@@ -277,16 +295,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         // do nothing
     }
 
+    // Check if the given value is within the specified range
     private boolean inRange(float value, float target, float tol) {
         return value >= target - tol && value <= target + tol;
     }
 
+    // Speak the answer displayed on the TextView using TTS
     private void speakAnswer() {
         String answer = tvGravity.getText().toString();
         if (tts != null && !answer.isEmpty()) {
             tts.speak(answer, TextToSpeech.QUEUE_FLUSH, null, null);
         }
     }
+
 
 }
 
