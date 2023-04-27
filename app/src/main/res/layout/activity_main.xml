@@ -24,27 +24,13 @@
         app:layout_constraintVertical_bias="0.96"
         app:srcCompat="@drawable/baseline_volume_up_24" />
 
-    <!-- <TextView
-        android:id="@+id/textView"
-        android:layout_width="168dp"
-        android:layout_height="72dp"
-        android:text="ExampleYes"
-        android:textColor="@color/white"
-        android:textSize="30sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.5" /> -->
     <TextView
         android:id="@+id/gravity"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Hello World!"
         android:textSize="50sp"
-        android:background="@color/yellow"
-        android:textColor="@color/black"
+        android:textColor="@color/yellow"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

@@ -1,7 +1,14 @@
 package com.example.magic8ball;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+import androidx.core.view.GestureDetectorCompat;
+
 import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -13,19 +20,10 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
-import android.widget.TextView;
-
-import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
-import androidx.core.view.GestureDetectorCompat;
-
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.TextView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -51,20 +49,20 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         mDetector = new GestureDetectorCompat(this, new MyGestureListener());
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.volumeControl);
+        FloatingActionButton fab = findViewById(R.id.volumeControl);
         flag = true;
 
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(flag){
+                if (flag) {
                     fab.setImageDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.baseline_volume_off_24));
                     flag = false;
-                    mMediaPlayer.setVolume(0,0);
-                }else {
+                    mMediaPlayer.setVolume(0, 0);
+                } else {
                     fab.setImageDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.baseline_volume_up_24));
                     flag = true;
-                    mMediaPlayer.setVolume(1,1);
+                    mMediaPlayer.setVolume(1, 1);
                 }
             }
         });
@@ -106,7 +104,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         manager.unregisterListener(this);
         mMediaPlayer = null;
 
-        SharedPreferences sharedPreferences =getSharedPreferences("MySharedPref", MODE_PRIVATE);
+        SharedPreferences sharedPreferences = getSharedPreferences("MySharedPref", MODE_PRIVATE);
         SharedPreferences.Editor myEdit = sharedPreferences.edit();
 
         myEdit.putString("response", tvGravity.getText().toString());
@@ -115,7 +113,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     @Override
-    public boolean onTouchEvent(MotionEvent event){
+    public boolean onTouchEvent(MotionEvent event) {
         mDetector.onTouchEvent(event);
         return super.onTouchEvent(event);
     }
@@ -156,15 +154,17 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-        float g = event.values[2];
+        float x = event.values[0];
+        float y = event.values[1];
+        float z = event.values[2];
 
-        if (inRange(g, 9.81f, 0.01f)) { // up!
+        if (inRange(z, 9.81f, 0.01f)) { // facing up
             if (flippedDown) {
                 tvGravity.setText(Answers.getRandomAnswer());
                 flippedDown = false;
             }
             stopAlerts();
-        } else if (inRange(g, -9.81f, 0.01f)) {
+        } else if (inRange(x, -9.81f, 0.01f) || inRange(y, -9.81f, 0.01f) || inRange(z, -9.81f, 0.01f)) { // facing down
             tvGravity.setText("Down");
             flippedDown = true;
             startAlerts();
@@ -220,7 +220,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private boolean inRange(float value, float target, float tol) {
         return value >= target - tol && value <= target + tol;
-
     }
 }
 
