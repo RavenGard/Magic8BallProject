@@ -44,34 +44,34 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private TextToSpeech tts;
     private boolean flippedDown = false;
 
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+//    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Initialize GestureDetector to detect gestures
+        // Initialize GestureDetector to detect gestures - Raven
         mDetector = new GestureDetectorCompat(this, new MyGestureListener());
 
-        // Set up FloatingActionButton for controlling volume
+        // Set up FloatingActionButton for controlling volume - Raven
         FloatingActionButton fab = findViewById(R.id.volumeControl);
         flag = true;
 
-        // Set up FloatingActionButton click listener
+        // Set up FloatingActionButton click listener - Raven
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (flag) {
-                    // Change FloatingActionButton icon to "volume off"
+                    // Change FloatingActionButton icon to "volume off" - Raven
                     fab.setImageDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.baseline_volume_off_24));
                     flag = false;
                     // Mute the media player
                     mMediaPlayer.setVolume(0, 0);
                 } else {
-                    // Change FloatingActionButton icon to "volume up"
+                    // Change FloatingActionButton icon to "volume up" - Raven
                     fab.setImageDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.baseline_volume_up_24));
                     flag = true;
-                    // Unmute the media player
+                    // Unmute the media player - Raven
                     mMediaPlayer.setVolume(1, 1);
                 }
             }
@@ -84,28 +84,25 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         mediaPlayer = MediaPlayer.create(this, R.raw.spongebobsquarepants);
         cameraManager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
 
-        // Get the camera ID for controlling the camera flashlight
+        // Get the camera ID for controlling the camera flashlight - Raven
         try {
             cameraId = cameraManager.getCameraIdList()[0];
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }
 
-        // Initialize the Text-to-Speech (TTS) object
-        tts = new TextToSpeech(this, new TextToSpeech.OnInitListener() {
-            @Override
-            public void onInit(int status) {
-                // Check if TTS initialization is successful
-                if (status == TextToSpeech.SUCCESS) {
-                    // Set TTS language to US English
-                    int result = tts.setLanguage(Locale.US);
-                    // Check if the language is supported
-                    if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
-                        Log.e("TTS", "Language not supported");
-                    }
-                } else {
-                    Log.e("TTS", "Initialization failed");
+        // Initialize the Text-to-Speech (TTS) object - Alan
+        tts = new TextToSpeech(this, status -> {
+            // Check if TTS initialization is successful
+            if (status == TextToSpeech.SUCCESS) {
+                // Set TTS language to US English
+                int result = tts.setLanguage(Locale.US);
+                // Check if the language is supported
+                if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                    Log.e("TTS", "Language not supported");
                 }
+            } else {
+                Log.e("TTS", "Initialization failed");
             }
         });
     }
@@ -115,12 +112,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     protected void onResume() {
         super.onResume();
 
-        // Create and start the media player
+        // Create and start the media player - Raven
         mMediaPlayer = MediaPlayer.create(this, R.raw.dreamy);
         mMediaPlayer.start();
         mMediaPlayer.setLooping(true);
 
-        // Retrieve saved response from SharedPreferences
+        // Retrieve saved response from SharedPreferences -
         SharedPreferences mPrefs = getSharedPreferences("MySharedPref", MODE_PRIVATE);
         String s1 = mPrefs.getString("response", "");
 
@@ -136,34 +133,42 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     protected void onPause() {
         super.onPause();
 
-        // Stop and release the media player
+        // Stop and release the media player - Raven
         mMediaPlayer.stop();
         mMediaPlayer.release();
         manager.unregisterListener(this);
         mMediaPlayer = null;
 
-        // Shutdown Text-to-Speech (TTS)
+        // Shutdown Text-to-Speech (TTS) -  Alan
         if (tts != null) {
             tts.stop();
             tts.shutdown();
         }
 
-        // Save the current response to SharedPreferences
+        // Save the current response to SharedPreferences - Alan
+        // Get a reference to the SharedPreferences object using "MySharedPref" as the storage key
         SharedPreferences sharedPreferences = getSharedPreferences("MySharedPref", MODE_PRIVATE);
+
+        // Create an editor object to modify the shared preferences
         SharedPreferences.Editor myEdit = sharedPreferences.edit();
 
+        // Put the current text displayed in the TextView tvGravity into the shared preferences
+        // Save it under the key "response"
         myEdit.putString("response", tvGravity.getText().toString());
+
+        // Apply the changes to the shared preferences
         myEdit.apply();
+
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        // Pass the touch event to the GestureDetector
+        // Pass the touch event to the GestureDetector -  Raven
         mDetector.onTouchEvent(event);
         return super.onTouchEvent(event);
     }
 
-
+//Raven
     private class MyGestureListener implements GestureDetector.OnGestureListener {
 
         @Override
@@ -208,105 +213,139 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
     }
 
-    // Speak the provided text using Text-to-Speech
+    // Speak the provided text using Text-to-Speech - Alan
     private void speak(String text) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, null);
         } else {
+            // Deprecated method for API levels lower than 21 (Android 5.0 Lollipop)
             tts.speak(text, TextToSpeech.QUEUE_FLUSH, null);
         }
     }
 
-    // Handle sensor changes - starting code from Dr. Lutz
+    // Handle sensor changes - Alan
     @Override
     public void onSensorChanged(SensorEvent event) {
         float x = event.values[0];
         float y = event.values[1];
         float z = event.values[2];
 
-        // Check if the device is facing up
+        // Check if the device is facing up by comparing the z-axis value to 9.81f
+        // (approximately equal to gravity)
         if (inRange(z, 9.81f, 0.01f)) {
+            // If the device was previously flipped down, update the TextView with a
+            // random answer and speak the answer using Text-to-Speech
             if (flippedDown) {
-                // Get a random answer, update the TextView, and speak the answer
                 tvGravity.setText(Answers.getRandomAnswer());
                 flippedDown = false;
-                speakAnswer(); // Add this line to activate Text-to-Speech
+                speakAnswer();
             }
-            stopAlerts();
-            // Check if the device is facing down
-        } else if (inRange(x, -9.81f, 0.01f) || inRange(y, -9.81f, 0.01f) || inRange(z, -9.81f, 0.01f)) {
-            tvGravity.setText("Down");
-            flippedDown = true;
-            startAlerts();
-        } else {
-            tvGravity.setText(" ");
+            // Stop any ongoing alerts (vibration, sound, and camera flash)
             stopAlerts();
         }
+        // Check if the device is facing down by comparing the x, y, or z-axis values
+        // to -9.81f (approximately equal to gravity in the opposite direction)
+        else if (inRange(x, -9.81f, 0.01f) || inRange(y, -9.81f, 0.01f) || inRange(z, -9.81f, 0.01f)) {
+            // Update the TextView to indicate the device is facing down
+            tvGravity.setText("Down");
+            flippedDown = true;
+            // Start alerts (vibration, sound, and camera flash)
+            startAlerts();
+        }
+        // If the device is not facing up or down, clear the TextView and stop alerts
+//        else {
+//            tvGravity.setText(" ");
+//            stopAlerts();
+//        }
     }
 
 
 
 
+
+    // This method starts alerts (vibration, sound, and camera flash) when the device is facing down
+    //Alan
     @RequiresApi(api = Build.VERSION_CODES.M)
     private void startAlerts() {
-        // Vibration
+        // Vibrate the device
+        // Check if the device is running Android 8.0 (API level 26) or higher
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            // Create a one-shot vibration for devices with API level 26 or higher
+            // Create a one-shot vibration with a duration of 500ms and the default amplitude
+            // This method is used for devices with API level 26 or higher
             vibrator.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
         } else {
-            // Create a one-shot vibration for devices with API level below 26
+            // Create a one-shot vibration with a duration of 500ms
+            // This method is used for devices with API level below 26
             vibrator.vibrate(500);
         }
 
-        // Sound
+        // Play the sound using the MediaPlayer instance
         mediaPlayer.start();
 
-        // Camera flash
+        // Turn on the camera flashlight
+        // This feature requires the device to be running Android 6.0 (API level 23) or higher
         try {
-            // Turn on the camera flashlight
+            // Turn on the camera flashlight by setting the torch mode to 'true' for the camera with the specified ID
             cameraManager.setTorchMode(cameraId, true);
         } catch (CameraAccessException e) {
+            // Log any exception that occurs while trying to access the camera
             e.printStackTrace();
         }
     }
 
+
+    // This method stops alerts (vibration, sound, and camera flash) when the device is not facing down
+    //Alan
     @RequiresApi(api = Build.VERSION_CODES.M)
     private void stopAlerts() {
-        // Stop vibration
+        // Cancel any ongoing vibration
         vibrator.cancel();
 
-        // Stop sound
+        // Stop playing the sound using the MediaPlayer instance
+        // Check if the media player is currently playing a sound
         if (mediaPlayer.isPlaying()) {
+            // Pause the media player and reset its position to the beginning of the audio file
             mediaPlayer.pause();
             mediaPlayer.seekTo(0);
         }
 
-        // Turn off camera flash
+        // Turn off the camera flashlight
+        // This feature requires the device to be running Android 6.0 (API level 23) or higher
         try {
-            // Turn off the camera flashlight
+            // Turn off the camera flashlight by setting the torch mode to 'false' for the camera with the specified ID
             cameraManager.setTorchMode(cameraId, false);
         } catch (CameraAccessException e) {
+            // Log any exception that occurs while trying to access the camera
             e.printStackTrace();
         }
     }
+
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int i) {
         // do nothing
     }
 
-    // Check if the given value is within the specified range
+    // This method checks if the given value is within the specified range - Raven
+    // It takes the value, target value, and tolerance as parameters
     private boolean inRange(float value, float target, float tol) {
+        // Returns true if the value is greater than or equal to (target - tol)
+        // and less than or equal to (target + tol)
         return value >= target - tol && value <= target + tol;
     }
 
-    // Speak the answer displayed on the TextView using TTS
+    // This method speaks the answer displayed on the TextView using Text-to-Speech (TTS) - Alan
     private void speakAnswer() {
+        // Get the text from the TextView and store it in a variable 'answer'
         String answer = tvGravity.getText().toString();
+        // Check if the TTS instance is not null and the answer is not empty
         if (tts != null && !answer.isEmpty()) {
+            // Speak the answer using TTS with a flush queue mode,
+            // meaning that it will clear any pending speech tasks before starting the new one
             tts.speak(answer, TextToSpeech.QUEUE_FLUSH, null, null);
         }
     }
+
 
 
 }
