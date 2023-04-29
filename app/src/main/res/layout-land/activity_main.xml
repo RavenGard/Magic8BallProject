@@ -26,10 +26,11 @@
 
     <TextView
         android:id="@+id/gravity"
-        android:layout_width="358dp"
-        android:layout_height="319dp"
+        android:layout_width="643dp"
+        android:layout_height="221dp"
+        android:autoSizeMaxTextSize="100sp"
+        android:autoSizeMinTextSize="70sp"
         android:autoSizeTextType="uniform"
-        android:autoSizeMaxTextSize="60sp"
         android:breakStrategy="high_quality"
         android:gravity="center"
         android:text="Hello World!"

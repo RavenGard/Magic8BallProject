@@ -8,6 +8,7 @@ import androidx.core.view.GestureDetectorCompat;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -25,6 +26,7 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -43,6 +45,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private GestureDetectorCompat mDetector;
     private TextToSpeech tts;
     private boolean flippedDown = false;
+    private FloatingActionButton fab;
+    private SharedPreferences mPrefs;
+    private SharedPreferences sharedPreferences;
 
 //    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
@@ -54,7 +59,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         mDetector = new GestureDetectorCompat(this, new MyGestureListener());
 
         // Set up FloatingActionButton for controlling volume - Raven
-        FloatingActionButton fab = findViewById(R.id.volumeControl);
+        fab = findViewById(R.id.volumeControl);
         flag = true;
 
         // Set up FloatingActionButton click listener - Raven
@@ -107,6 +112,48 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         });
     }
 
+    // called when orientation changes
+    // updates textsize and maitains state of fab - Raven
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        setContentView(R.layout.activity_main);
+
+        tvGravity = findViewById(R.id.gravity);
+        // Set up FloatingActionButton for controlling volume - Raven
+        fab = findViewById(R.id.volumeControl);
+        if (flag) {
+            fab.setImageDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.baseline_volume_up_24));
+        } else {
+            fab.setImageDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.baseline_volume_off_24));
+        }
+
+        // Retrieve saved response from SharedPreferences - Raven
+        mPrefs = getSharedPreferences("MySharedPref", MODE_PRIVATE);
+        String s1 = mPrefs.getString("response", "");
+
+        // Set the text view to display the saved response
+        tvGravity.setText(s1);
+
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (flag) {
+                    // Change FloatingActionButton icon to "volume off" - Raven
+                    fab.setImageDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.baseline_volume_off_24));
+                    flag = false;
+                    // Mute the media player
+                    mMediaPlayer.setVolume(0, 0);
+                } else {
+                    // Change FloatingActionButton icon to "volume up" - Raven
+                    fab.setImageDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.baseline_volume_up_24));
+                    flag = true;
+                    // Unmute the media player - Raven
+                    mMediaPlayer.setVolume(1, 1);
+                }
+            }
+        });
+    }
 
     @Override
     protected void onResume() {
@@ -117,8 +164,18 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         mMediaPlayer.start();
         mMediaPlayer.setLooping(true);
 
-        // Retrieve saved response from SharedPreferences -
-        SharedPreferences mPrefs = getSharedPreferences("MySharedPref", MODE_PRIVATE);
+        // maintains state of fab - Raven
+
+        if (flag) {
+            fab.setImageDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.baseline_volume_up_24));
+        } else {
+            fab.setImageDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.baseline_volume_off_24));
+            mMediaPlayer.setVolume(0, 0);
+
+        }
+
+        // Retrieve saved response from SharedPreferences - Raven
+        mPrefs = getSharedPreferences("MySharedPref", MODE_PRIVATE);
         String s1 = mPrefs.getString("response", "");
 
         // Set the text view to display the saved response
@@ -127,7 +184,24 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         // Register the sensor listener
         manager.registerListener(this, manager.getDefaultSensor(Sensor.TYPE_GRAVITY),
                 SensorManager.SENSOR_DELAY_UI);
+
+        // Initialize the Text-to-Speech (TTS) object - Alan
+        tts = new TextToSpeech(this, status -> {
+            // Check if TTS initialization is successful
+            if (status == TextToSpeech.SUCCESS) {
+                // Set TTS language to US English
+                int result = tts.setLanguage(Locale.US);
+                // Check if the language is supported
+                if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                    Log.e("TTS", "Language not supported");
+                }
+            } else {
+                Log.e("TTS", "Initialization failed");
+            }
+        });
+
     }
+
 
     @Override
     protected void onPause() {
@@ -145,9 +219,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             tts.shutdown();
         }
 
-        // Save the current response to SharedPreferences - Alan
+        // Save the current response to SharedPreferences - Raven
         // Get a reference to the SharedPreferences object using "MySharedPref" as the storage key
-        SharedPreferences sharedPreferences = getSharedPreferences("MySharedPref", MODE_PRIVATE);
+        sharedPreferences = getSharedPreferences("MySharedPref", MODE_PRIVATE);
 
         // Create an editor object to modify the shared preferences
         SharedPreferences.Editor myEdit = sharedPreferences.edit();
@@ -186,6 +260,20 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             // Get a random answer and update the TextView
             String answer = Answers.getRandomAnswer();
             tvGravity.setText(answer);
+
+            // Save the current response to SharedPreferences - Raven
+            // Get a reference to the SharedPreferences object using "MySharedPref" as the storage key
+            sharedPreferences = getSharedPreferences("MySharedPref", MODE_PRIVATE);
+
+            // Create an editor object to modify the shared preferences
+            SharedPreferences.Editor myEdit = sharedPreferences.edit();
+
+            // Put the current text displayed in the TextView tvGravity into the shared preferences
+            // Save it under the key "response"
+            myEdit.putString("response", tvGravity.getText().toString());
+
+            // Apply the changes to the shared preferences
+            myEdit.apply();
 
             // Speak the answer using TTS
             speak(answer);
@@ -239,24 +327,38 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 tvGravity.setText(Answers.getRandomAnswer());
                 flippedDown = false;
                 speakAnswer();
+                // Save the current response to SharedPreferences - Raven
+                // Get a reference to the SharedPreferences object using "MySharedPref" as the storage key
+                sharedPreferences = getSharedPreferences("MySharedPref", MODE_PRIVATE);
+
+                // Create an editor object to modify the shared preferences
+                SharedPreferences.Editor myEdit = sharedPreferences.edit();
+
+                // Put the current text displayed in the TextView tvGravity into the shared preferences
+                // Save it under the key "response"
+                myEdit.putString("response", tvGravity.getText().toString());
+
+                // Apply the changes to the shared preferences
+                myEdit.apply();
             }
-            // Stop any ongoing alerts (vibration, sound, and camera flash)
-            stopAlerts();
+            // Stop any ongoing alerts (vibration, sound, and camera flash): comment out to stop errors on emulator - Raven
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+//                stopAlerts();
+//            }
         }
         // Check if the device is facing down by comparing the x, y, or z-axis values
         // to -9.81f (approximately equal to gravity in the opposite direction)
         else if (inRange(x, -9.81f, 0.01f) || inRange(y, -9.81f, 0.01f) || inRange(z, -9.81f, 0.01f)) {
             // Update the TextView to indicate the device is facing down
             tvGravity.setText("Down");
+            speak("Screen pointing down");
             flippedDown = true;
-            // Start alerts (vibration, sound, and camera flash)
-            startAlerts();
+            // Start alerts (vibration, sound, and camera flash)- comment out to stop errors in emulator- Raven
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+//                startAlerts();
+//            }
         }
-        // If the device is not facing up or down, clear the TextView and stop alerts
-//        else {
-//            tvGravity.setText(" ");
-//            stopAlerts();
-//        }
+
     }
 
 
