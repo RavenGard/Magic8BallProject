@@ -278,7 +278,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     // Handle sensor changes - starting code from Dr. Lutz
-    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     public void onSensorChanged(SensorEvent event) {
         float x = event.values[0];
