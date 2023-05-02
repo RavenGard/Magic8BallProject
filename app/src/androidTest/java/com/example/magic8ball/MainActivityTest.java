@@ -1,23 +1,25 @@
 package com.example.magic8ball;
 
-
+import androidx.test.espresso.ViewAction;
+import androidx.test.espresso.action.ViewActions;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.rule.ActivityTestRule;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static org.hamcrest.Matchers.anyOf;
 
-// This annotation specifies that the test will run with AndroidJUnit4 runner
 @RunWith(AndroidJUnit4.class)
 public class MainActivityTest {
 
-    // This rule tells the test framework to launch MainActivity before running any test
     @Rule
     public ActivityTestRule<MainActivity> mActivityRule = new ActivityTestRule<>(MainActivity.class);
 
@@ -45,15 +47,10 @@ public class MainActivityTest {
             "Very doubtful."
     };
 
-    // This test checks if the up/down sensing is working properly and
-    // if the displayed response matches one of the 20 responses
     @Test
     public void testUpDownSensingAndResponses() {
-        // Run the test 5 times
         for (int i = 0; i < 5; i++) {
-            // Perform a click action on the TextView with ID 'gravity'
             onView(withId(R.id.gravity)).perform(click());
-            // Check if the text displayed on the TextView matches any of the 20 possible responses
             onView(withId(R.id.gravity)).check(matches(anyOf(
                     withText(RESPONSES[0]),
                     withText(RESPONSES[1]),
