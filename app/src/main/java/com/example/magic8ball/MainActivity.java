@@ -141,22 +141,21 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             @Override
             public void onClick(View v) {
                 if (flag) {
-                    // Change FloatingActionButton icon to "volume off" - Raven
+                    // Change FloatingActionButton icon to "volume off"
                     fab.setImageDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.baseline_volume_off_24));
                     flag = false;
                     // Mute the media player
                     mMediaPlayer.setVolume(0, 0);
                 } else {
-                    // Change FloatingActionButton icon to "volume up" - Raven
+                    // Change FloatingActionButton icon to "volume up"
                     fab.setImageDrawable(ContextCompat.getDrawable(getApplicationContext(), R.drawable.baseline_volume_up_24));
                     flag = true;
-                    // Unmute the media player - Raven
+                    // Unmute the media player
                     mMediaPlayer.setVolume(1, 1);
                 }
             }
         });
     }
-
 
     @Override
     protected void onResume() {
@@ -177,21 +176,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         // Register the sensor listener
         manager.registerListener(this, manager.getDefaultSensor(Sensor.TYPE_GRAVITY),
                 SensorManager.SENSOR_DELAY_UI);
-
-        // Initialize the Text-to-Speech (TTS) object - Alan
-        tts = new TextToSpeech(this, status -> {
-            // Check if TTS initialization is successful
-            if (status == TextToSpeech.SUCCESS) {
-                // Set TTS language to US English
-                int result = tts.setLanguage(Locale.US);
-                // Check if the language is supported
-                if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
-                    Log.e("TTS", "Language not supported");
-                }
-            } else {
-                Log.e("TTS", "Initialization failed");
-            }
-        });
     }
 
     @Override
